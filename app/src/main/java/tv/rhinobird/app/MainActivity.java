@@ -8,6 +8,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -21,9 +22,11 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.PermissionRequest;
 import android.webkit.WebViewClient;
+import android.widget.RelativeLayout;
 
 import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkView;
+import org.xwalk.core.internal.XWalkLaunchScreenManager;
 
 import tv.rhinobird.app.R;
 
@@ -127,8 +130,9 @@ public class MainActivity extends Activity
             return fragment;
         }
 
-        private WebView mWebRTCWebView;
+        //private WebView mWebRTCWebView;
         private XWalkView xWalkWebView;
+        private XWalkLaunchScreenManager xWalkLaunchScreenManager;
 
         public PlaceholderFragment() {
         }
@@ -137,12 +141,12 @@ public class MainActivity extends Activity
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+            String wrapUrl = "https://beta.rhinobird.tv/";
+   /*         if(Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
                 mWebRTCWebView = (WebView) rootView.findViewById(R.id.fragment_main_webview);
                 setUpWebViewDefaults(mWebRTCWebView);
 
-            mWebRTCWebView.loadUrl("https://beta.rhinobird.tv/");
-
+            mWebRTCWebView.loadUrl(wrapUrl);
             mWebRTCWebView.setWebChromeClient(new WebChromeClient() {
 
                 @Override
@@ -152,7 +156,7 @@ public class MainActivity extends Activity
                         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
                         @Override
                         public void run() {
-                            if(request.getOrigin().toString().equals("https://beta.rhinobird.tv/")) {
+                            if(request.getOrigin().toString().equals(wrapUrl)) {
                                 request.grant(request.getResources());
                             } else {
                                 request.deny();
@@ -161,13 +165,35 @@ public class MainActivity extends Activity
                     });
                 }
 
+                public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                    mWebRTCWebView.loadUrl("file:///android_asset/error_page.html");
+                }
+                @Override
+                public void onProgressChanged(WebView view, int progress) {
+                    //hide loading image
+                    if (progress < 100) {
+                        getView().findViewById(R.id.splash_screen2).setVisibility(View.GONE);
+                        //show webview
+                        getView().findViewById(R.id.container).setVisibility(View.VISIBLE);
+                    }
+                }
             });
-            }else{
+            }else{*/
                 xWalkWebView= (XWalkView) rootView.findViewById(R.id.fragment_main_webview);
                 xWalkWebView.clearCache(true);
-                xWalkWebView.load("https://beta.rhinobird.tv/", null);
+                //xWalkLaunchScreenManager.displayLaunchScreen("first-paint","a" );
+
+
+                if (DetectConnection.checkInternetConnection(getActivity ())) {
+                    xWalkWebView.load(wrapUrl, null);
+                  //  xWalkLaunchScreenManager.onPageFinished(wrapUrl);
+                }
+                else{
+                    xWalkWebView.load("file:///android_asset/error_page.html", null);
+                }
                 XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
-            }
+
+            //} //use xwalk for everything
 
             return rootView;
         }
@@ -190,9 +216,9 @@ public class MainActivity extends Activity
              * When the application falls into the background we want to stop the media stream
              * such that the camera is free to use by other apps.
              */
-            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+/*            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
                 mWebRTCWebView.evaluateJavascript("if(window.localStream){window.localStream.stop();}", null);
-            }
+            }*/
         }
 
         @Override
@@ -208,7 +234,7 @@ public class MainActivity extends Activity
          *
          * @param webView
          */
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    /*    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         private void setUpWebViewDefaults(WebView webView) {
             WebSettings settings = webView.getSettings();
 
@@ -240,7 +266,7 @@ public class MainActivity extends Activity
             // AppRTC requires third party cookies to work
             CookieManager cookieManager = CookieManager.getInstance();
             cookieManager.setAcceptThirdPartyCookies(mWebRTCWebView, true);
-        }
+        }*/
     }
 
 }
