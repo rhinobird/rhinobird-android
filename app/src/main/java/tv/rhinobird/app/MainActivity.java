@@ -142,76 +142,48 @@ public class MainActivity extends Activity
                 Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
             String wrapUrl = "https://beta.rhinobird.tv/";
-   /*         if(Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-                mWebRTCWebView = (WebView) rootView.findViewById(R.id.fragment_main_webview);
-                setUpWebViewDefaults(mWebRTCWebView);
 
-            mWebRTCWebView.loadUrl(wrapUrl);
-            mWebRTCWebView.setWebChromeClient(new WebChromeClient() {
-
-                @Override
-                public void onPermissionRequest(final PermissionRequest request) {
-                    Log.d(TAG, "onPermissionRequest");
-                    getActivity().runOnUiThread(new Runnable() {
-                        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-                        @Override
-                        public void run() {
-                            if(request.getOrigin().toString().equals(wrapUrl)) {
-                                request.grant(request.getResources());
-                            } else {
-                                request.deny();
-                            }
-                        }
-                    });
-                }
-
-                public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-                    mWebRTCWebView.loadUrl("file:///android_asset/error_page.html");
-                }
-                @Override
-                public void onProgressChanged(WebView view, int progress) {
-                    //hide loading image
-                    if (progress < 100) {
-                        getView().findViewById(R.id.splash_screen2).setVisibility(View.GONE);
-                        //show webview
-                        getView().findViewById(R.id.container).setVisibility(View.VISIBLE);
-                    }
-                }
-            });
-            }else{*/
                 xWalkWebView= (XWalkView) rootView.findViewById(R.id.fragment_main_webview);
                 xWalkWebView.clearCache(true);
-                //xWalkLaunchScreenManager.displayLaunchScreen("first-paint","a" );
 
 
                 if (DetectConnection.checkInternetConnection(getActivity ())) {
                     xWalkWebView.load(wrapUrl, null);
-                  //  xWalkLaunchScreenManager.onPageFinished(wrapUrl);
+
+/*
+                            //hide loading image
+                            getView().findViewById(R.id.loadingSplash1).setVisibility(View.GONE);
+                            getView().findViewById(R.id.progressBar).setVisibility(View.GONE);
+                            //show webview
+                            getView().findViewById(R.id.fragment_main_webview).setVisibility(View.VISIBLE);
+                            Log.d(TAG, "webview visible");
+*/
+
                 }
                 else{
                     xWalkWebView.load("file:///android_asset/error_page.html", null);
                 }
                 XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
 
-            //} //use xwalk for everything
+
 
             return rootView;
         }
         @Override
         public void onPause() {
             super.onPause();
-            if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
                 if (xWalkWebView != null) {
                     xWalkWebView.pauseTimers();
                     xWalkWebView.onHide();
                 }
-            }
+
         }
 
         @Override
         public void onStop() {
             super.onStop();
-
+            xWalkWebView.evaluateJavascript("if(window.localStream){window.localStream.stop();}", null);
+            xWalkWebView.stopLoading();
             /**
              * When the application falls into the background we want to stop the media stream
              * such that the camera is free to use by other apps.
