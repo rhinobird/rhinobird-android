@@ -4,12 +4,17 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 
 import android.app.ActionBar;
+import android.app.ActivityManager;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -60,6 +65,21 @@ public class MainActivity extends Activity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+            TypedValue typedValue = new TypedValue();
+            Resources.Theme theme = getTheme();
+            theme.resolveAttribute(R.attr.colorPrimary, typedValue, true);
+            int color = typedValue.data;
+
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.icon_rhino);
+            ActivityManager.TaskDescription td = new ActivityManager.TaskDescription(null, bm, color);
+
+            setTaskDescription(td);
+            bm.recycle();
+
+        }
     }
 
     @Override
@@ -132,6 +152,7 @@ public class MainActivity extends Activity
 
         //private WebView mWebRTCWebView;
         private XWalkView xWalkWebView;
+        private XWalkView xWalkWebView1;
         private XWalkLaunchScreenManager xWalkLaunchScreenManager;
 
         public PlaceholderFragment() {
@@ -141,32 +162,33 @@ public class MainActivity extends Activity
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            String wrapUrl = "https://beta.rhinobird.tv/";
+            final String wrapUrl = "https://beta.rhinobird.tv/";
 
-                xWalkWebView= (XWalkView) rootView.findViewById(R.id.fragment_main_webview);
-                xWalkWebView.clearCache(true);
+            xWalkWebView1 = (XWalkView) rootView.findViewById(R.id.fragment_loader_webview);
+            xWalkWebView1.load("file:///android_asset/index.html", null);
 
+            xWalkWebView = (XWalkView) rootView.findViewById(R.id.fragment_main_webview);
+            xWalkWebView.clearCache(true);
+            xWalkWebView.setVisibility(View.GONE);
 
-                if (DetectConnection.checkInternetConnection(getActivity ())) {
-                    xWalkWebView.load(wrapUrl, null);
+            if (DetectConnection.checkInternetConnection(getActivity ())) {
+                xWalkWebView.load(wrapUrl, null);
+            }
+            else {
+              xWalkWebView.load("file:///android_asset/error_page.html", null);
+            }
+            //XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
 
-/*
-                            //hide loading image
-                            getView().findViewById(R.id.loadingSplash1).setVisibility(View.GONE);
-                            getView().findViewById(R.id.progressBar).setVisibility(View.GONE);
-                            //show webview
-                            getView().findViewById(R.id.fragment_main_webview).setVisibility(View.VISIBLE);
-                            Log.d(TAG, "webview visible");
-*/
-
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    // TODO Auto-generated method stub
+                    //hide loading image
+                    xWalkWebView.setVisibility(View.VISIBLE);
+                    xWalkWebView1.setVisibility(View.GONE);
+                    Log.d(TAG, "webview visible");
                 }
-                else{
-                    xWalkWebView.load("file:///android_asset/error_page.html", null);
-                }
-                XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
-
-
-
+            }, 10000);
             return rootView;
         }
         @Override
