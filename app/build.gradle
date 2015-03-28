@@ -3,6 +3,10 @@ apply plugin: 'com.android.application'
 android {
     signingConfigs {
         config {
+            keyAlias 'rhinoadmin'
+            keyPassword 'rhinoadmin'
+            storeFile file('/Users/s2d2/Documents/keystoreandroid2.jks')
+            storePassword 'rhinoadmin'
         }
     }
     compileSdkVersion 21
@@ -11,13 +15,17 @@ android {
         applicationId 'tv.rhinobird.app'
         minSdkVersion 18
         targetSdkVersion 21
-        versionCode 5
+        versionCode 6
         versionName "1.1"
     }
     buildTypes {
         release {
-           // minifyEnabled true
-           // proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            //minifyEnabled true
+            // proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+        }
+        debug {
+            signingConfig signingConfigs.config
         }
     }
 //    productFlavors {

@@ -10,9 +10,9 @@ import android.app.FragmentManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -21,17 +21,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
-import android.webkit.CookieManager;
-import android.webkit.WebChromeClient;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.PermissionRequest;
-import android.webkit.WebViewClient;
-import android.widget.RelativeLayout;
-
+import android.webkit.SslErrorHandler;
+import android.webkit.ValueCallback;
 import org.xwalk.core.XWalkPreferences;
+import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkView;
-import org.xwalk.core.internal.XWalkLaunchScreenManager;
+import org.xwalk.core.internal.XWalkViewInternal;
+
+import java.util.Set;
 
 import tv.rhinobird.app.R;
 
@@ -150,11 +147,10 @@ public class MainActivity extends Activity
             return fragment;
         }
 
-        //private WebView mWebRTCWebView;
         private XWalkView xWalkWebView;
         private XWalkView xWalkWebView1;
-        private XWalkLaunchScreenManager xWalkLaunchScreenManager;
-
+        private ValueCallback<Boolean> callback;
+        private final String wrapUrl = "https://beta.rhinobird.tv/";
         public PlaceholderFragment() {
         }
 
@@ -162,7 +158,6 @@ public class MainActivity extends Activity
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            final String wrapUrl = "https://beta.rhinobird.tv/";
 
             xWalkWebView1 = (XWalkView) rootView.findViewById(R.id.fragment_loader_webview);
             xWalkWebView1.load("file:///android_asset/index.html", null);
@@ -170,25 +165,41 @@ public class MainActivity extends Activity
             xWalkWebView = (XWalkView) rootView.findViewById(R.id.fragment_main_webview);
             xWalkWebView.clearCache(true);
             xWalkWebView.setVisibility(View.GONE);
+      /*      XWalkResourceClient client = new XWalkResourceClient(xWalkWebView);
+            client.onReceivedSslError();*/
+            xWalkWebView.setResourceClient(new XWalkResourceClient(xWalkWebView){
+                @Override
+                public void onLoadFinished(XWalkView view, String url) {
+                    super.onLoadFinished(xWalkWebView, url);
+                    Log.d(TAG, "ya cargo la pagg!!");
+                    xWalkWebView.setVisibility(View.VISIBLE);
+                    xWalkWebView1.setVisibility(View.GONE);
+                }
+                //@Override
+/*                public void onReceivedSslError (XWalkView view, SslErrorHandler handler, SslError error) {
+                    super.onReceivedSslError(xWalkWebView, ValueCallback<Boolean> callback, error);
+                    callback.onReceiveValue(true);
+                    Log.d(TAG, error.toString());
+                    handler.proceed();
+                }*/
+                //@Override
+                public void onReceivedSslError(XWalkViewInternal view, ValueCallback<Boolean> callback, SslError error){
+                    callback.onReceiveValue(true);
+                    Log.d(TAG, error.toString());
 
+                }
+
+
+            });
             if (DetectConnection.checkInternetConnection(getActivity ())) {
                 xWalkWebView.load(wrapUrl, null);
             }
             else {
               xWalkWebView.load("file:///android_asset/error_page.html", null);
             }
-            //XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
 
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    // TODO Auto-generated method stub
-                    //hide loading image
-                    xWalkWebView.setVisibility(View.VISIBLE);
-                    xWalkWebView1.setVisibility(View.GONE);
-                    Log.d(TAG, "webview visible");
-                }
-            }, 10000);
+//            XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
+
             return rootView;
         }
         @Override
@@ -201,18 +212,26 @@ public class MainActivity extends Activity
 
         }
 
+/*        @Override
+        public void onResume() {
+            super.onResume();
+            if (DetectConnection.checkInternetConnection(getActivity ())) {
+                xWalkWebView.load(wrapUrl, null);
+            }
+            else {
+                xWalkWebView.load("file:///android_asset/error_page.html", null);
+            }
+
+        }*/
         @Override
         public void onStop() {
             super.onStop();
-            xWalkWebView.evaluateJavascript("if(window.localStream){window.localStream.stop();}", null);
-            xWalkWebView.stopLoading();
             /**
              * When the application falls into the background we want to stop the media stream
              * such that the camera is free to use by other apps.
              */
-/*            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-                mWebRTCWebView.evaluateJavascript("if(window.localStream){window.localStream.stop();}", null);
-            }*/
+            xWalkWebView.evaluateJavascript("if(window.localStream){window.localStream.stop();}", null);
+            xWalkWebView.stopLoading();
         }
 
         @Override
@@ -222,45 +241,7 @@ public class MainActivity extends Activity
                     getArguments().getInt(ARG_SECTION_NUMBER));
         }
 
-        /**
-         * Convenience method to set some generic defaults for a
-         * given WebView
-         *
-         * @param webView
-         */
-    /*    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-        private void setUpWebViewDefaults(WebView webView) {
-            WebSettings settings = webView.getSettings();
 
-            // Enable Javascript
-            settings.setJavaScriptEnabled(true);
-
-            // Use WideViewport and Zoom out if there is no viewport defined
-            settings.setUseWideViewPort(true);
-            settings.setLoadWithOverviewMode(true);
-
-            // Enable pinch to zoom without the zoom buttons
-            settings.setBuiltInZoomControls(true);
-
-            // Allow use of Local Storage
-            settings.setDomStorageEnabled(true);
-
-            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.HONEYCOMB) {
-                // Hide the zoom controls for HONEYCOMB+
-                settings.setDisplayZoomControls(false);
-            }
-
-            // Enable remote debugging via chrome://inspect
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                WebView.setWebContentsDebuggingEnabled(true);
-            }
-
-            webView.setWebViewClient(new WebViewClient());
-
-            // AppRTC requires third party cookies to work
-            CookieManager cookieManager = CookieManager.getInstance();
-            cookieManager.setAcceptThirdPartyCookies(mWebRTCWebView, true);
-        }*/
     }
 
 }
