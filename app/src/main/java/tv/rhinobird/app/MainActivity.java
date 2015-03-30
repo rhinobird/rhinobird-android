@@ -3,9 +3,13 @@ package tv.rhinobird.app;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.hardware.*;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraManager;
 import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,25 +33,18 @@ public class MainActivity extends Activity{
     private XWalkView xWalkWebView;
     private XWalkView xWalkLoader;
     private static final String wrapUrl = "https://beta.rhinobird.tv/";
+    private Camera mCamera;//getVideoStabilization()
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        //getActionBar().hide();
-
-
-        xWalkLoader = (XWalkView) findViewById(R.id.fragment_loader_webview);
-        xWalkLoader.load("file:///android_asset/index.html", null);
-
-        xWalkWebView = (XWalkView) findViewById(R.id.fragment_main_webview);
-        xWalkWebView.clearCache(true);
-        xWalkWebView.setVisibility(View.GONE);
-        xWalkWebView.getVisibility();
-
+        setContentView(R.layout.activity_main);
+      //Camera.Parameters params = mCamera.getParameters();
+        Log.d(TAG, "PARAMETROS DE LA CAMARA!");
+  //      Log.d(TAG, params.toString());
         initWeb();
-        XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
+        loadWeb();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
@@ -88,18 +85,43 @@ public class MainActivity extends Activity{
        @Override
         public void onResume() {
            super.onResume();
-           xWalkWebView.evaluateJavascript("if(window.localStream){window.localStream.start();}", null);
+           if (xWalkWebView != null) {
+               xWalkWebView.resumeTimers();
+               xWalkWebView.onShow();
+           }
+           //loadWeb();
 
         }
         @Override
         public void onRestart() {
             super.onRestart();
-            xWalkWebView.evaluateJavascript("if(window.localStream){window.localStream.start();}", null);
+            xWalkWebView.resumeTimers();
+            //loadWeb();
+        }
+        @Override
+        protected void onDestroy() {
+            super.onDestroy();
+            if (xWalkWebView != null) {
+                xWalkWebView.onDestroy();
+            }
+        }
+        public void initWeb(){
+            xWalkLoader = (XWalkView) findViewById(R.id.fragment_loader_webview);
+            xWalkLoader.load("file:///android_asset/index.html", null);
+
+            xWalkWebView = (XWalkView) findViewById(R.id.fragment_main_webview);
+            xWalkWebView.clearCache(true);
+            // turn on debugging
+            XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
         }
 
-        public void initWeb(){
+        public void loadWeb(){
             //XWalkResourceClient client = new XWalkResourceClient(xWalkWebView);
-
+            //xWalkLoader.setVisibility(View.VISIBLE);
+            xWalkWebView.setVisibility(View.GONE);
+            if (xWalkLoader.getVisibility() == View.GONE){
+                xWalkLoader.setVisibility(View.VISIBLE);
+            }
             xWalkWebView.setResourceClient(new XWalkResourceClient(xWalkWebView){
                 @Override
                 public void onLoadFinished(XWalkView view, String url) {
@@ -114,14 +136,10 @@ public class MainActivity extends Activity{
                     Log.d(TAG, error.toString());
                     handler.proceed();
                 }*/
-                //@Override
                 public void onReceivedSslError(XWalkViewInternal view, ValueCallback<Boolean> callback, SslError error){
                     callback.onReceiveValue(true);
                     Log.d(TAG, error.toString());
-
                 }
-
-
             });
             if (DetectConnection.checkInternetConnection( this)) {
                 xWalkWebView.load(wrapUrl, null);
