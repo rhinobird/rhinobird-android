@@ -18,6 +18,8 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.Window;
 import android.webkit.ValueCallback;
+import android.webkit.WebView;
+
 import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkView;
@@ -31,18 +33,26 @@ public class MainActivity extends Activity{
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private XWalkView xWalkWebView;
-    private XWalkView xWalkLoader;
+    //private XWalkView xWalkLoader;
+    private WebView webLoader;
     private static final String wrapUrl = "https://beta.rhinobird.tv/";
-    private Camera mCamera;//getVideoStabilization()
+    //private Camera mCamera;//getVideoStabilization()
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
-      //Camera.Parameters params = mCamera.getParameters();
-        Log.d(TAG, "PARAMETROS DE LA CAMARA!");
-  //      Log.d(TAG, params.toString());
+/*        int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+        mCamera = Camera.open(cameraId);
+        Camera.Parameters params = mCamera.getParameters();
+        boolean asd = params.getVideoStabilization();
+        params.setVideoStabilization(false);
+
+        Log.d(TAG, "soporta estabilizacion??!");
+        Log.d(TAG, String.valueOf(asd));
+        mCamera.release();*/
+
         initWeb();
         loadWeb();
 
@@ -53,7 +63,7 @@ public class MainActivity extends Activity{
             theme.resolveAttribute(R.attr.colorPrimary, typedValue, true);
             int color = typedValue.data;
 
-            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.icon_rhino);
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
             ActivityManager.TaskDescription td = new ActivityManager.TaskDescription(null, bm, color);
 
             setTaskDescription(td);
@@ -106,8 +116,10 @@ public class MainActivity extends Activity{
             }
         }
         public void initWeb(){
-            xWalkLoader = (XWalkView) findViewById(R.id.fragment_loader_webview);
-            xWalkLoader.load("file:///android_asset/index.html", null);
+            //xWalkLoader = (XWalkView) findViewById(R.id.fragment_loader_webview);
+            //xWalkLoader.load("file:///android_asset/index.html", null);
+            webLoader = (WebView) findViewById(R.id.fragment_loader_webview);
+            webLoader.loadUrl("file:///android_asset/index.html");
 
             xWalkWebView = (XWalkView) findViewById(R.id.fragment_main_webview);
             xWalkWebView.clearCache(true);
@@ -119,15 +131,15 @@ public class MainActivity extends Activity{
             //XWalkResourceClient client = new XWalkResourceClient(xWalkWebView);
             //xWalkLoader.setVisibility(View.VISIBLE);
             xWalkWebView.setVisibility(View.GONE);
-            if (xWalkLoader.getVisibility() == View.GONE){
-                xWalkLoader.setVisibility(View.VISIBLE);
+            if (webLoader.getVisibility() == View.GONE){
+                webLoader.setVisibility(View.VISIBLE);
             }
             xWalkWebView.setResourceClient(new XWalkResourceClient(xWalkWebView){
                 @Override
                 public void onLoadFinished(XWalkView view, String url) {
                     super.onLoadFinished(xWalkWebView, url);
                     xWalkWebView.setVisibility(View.VISIBLE);
-                    xWalkLoader.setVisibility(View.GONE);
+                    webLoader.setVisibility(View.GONE);
                 }
                 //@Override
 /*                public void onReceivedSslError (XWalkView view, SslErrorHandler handler, SslError error) {

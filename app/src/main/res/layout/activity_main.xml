@@ -7,13 +7,19 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <org.xwalk.core.XWalkView
+  <!--  <org.xwalk.core.XWalkView
         android:id="@+id/fragment_loader_webview"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#000000"
         android:visibility="visible"
+        />-->
+    <WebView  xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/fragment_loader_webview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:background="#000000"
         />
     <org.xwalk.core.XWalkView
         android:id="@+id/fragment_main_webview"
