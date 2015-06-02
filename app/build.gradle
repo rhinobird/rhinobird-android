@@ -10,7 +10,7 @@ android {
         }
     }
     compileSdkVersion 21
-    buildToolsVersion '21.0'
+    buildToolsVersion '21.1.2'
     defaultConfig {
         applicationId 'tv.rhinobird.app'
         minSdkVersion 18
@@ -23,9 +23,11 @@ android {
             //minifyEnabled true
             // proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.config
+            buildConfigField "String", "GCM_PROJECT_ID", "\"338648526868\""
         }
         debug {
-            signingConfig signingConfigs.config
+            //signingConfig signingCIonfigs.config
+            buildConfigField "String", "GCM_PROJECT_ID", "\"197045009507\""
         }
     }
 //    productFlavors {
@@ -42,4 +44,5 @@ dependencies {
     compile 'com.android.support:support-v4:21.0.0'
     compile 'com.android.support:appcompat-v7:21.0.0'
     compile 'org.xwalk:xwalk_core_library:12.41.296.5'
+    compile 'com.google.android.gms:play-services:7.3.0'
 }

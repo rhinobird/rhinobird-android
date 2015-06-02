@@ -1,12 +1,12 @@
 package tv.rhinobird.app;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 
 import android.app.ActionBar;
 import android.app.ActivityManager;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -21,16 +21,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
-import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
-import org.xwalk.core.XWalkPreferences;
+
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkView;
 import org.xwalk.core.internal.XWalkViewInternal;
-
-import java.util.Set;
-
-import tv.rhinobird.app.R;
 
 
 public class MainActivity extends Activity
@@ -47,6 +42,7 @@ public class MainActivity extends Activity
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
     private CharSequence mTitle;
+    private String mUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +53,9 @@ public class MainActivity extends Activity
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
+
+        Intent intent = getIntent();
+
 
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(
@@ -164,6 +163,7 @@ public class MainActivity extends Activity
 
             xWalkWebView = (XWalkView) rootView.findViewById(R.id.fragment_main_webview);
             xWalkWebView.clearCache(true);
+            xWalkWebView.addJavascriptInterface(new RbWebAppInterface(getActivity()), "RbWebApp");
             xWalkWebView.setVisibility(View.GONE);
       /*      XWalkResourceClient client = new XWalkResourceClient(xWalkWebView);
             client.onReceivedSslError();*/
@@ -192,7 +192,14 @@ public class MainActivity extends Activity
 
             });
             if (DetectConnection.checkInternetConnection(getActivity ())) {
-                xWalkWebView.load(wrapUrl, null);
+                Intent intent = getActivity().getIntent();
+                String url;
+                if (intent.hasExtra("url")) {
+                    url = intent.getStringExtra("url");
+                } else {
+                    url = wrapUrl;
+                }
+                xWalkWebView.load(url, null);
             }
             else {
               xWalkWebView.load("file:///android_asset/error_page.html", null);
