@@ -44,7 +44,7 @@ public class GcmBroadcastReceiver extends BroadcastReceiver {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(mContext)
                         .setContentIntent(resultPendingIntent)
-                        .setSmallIcon(R.drawable.ic_launcher)
+                        .setSmallIcon(R.mipmap.ic_launcher)
                         .setContentTitle(username + " is going live!")
                         .setVibrate(pattern)
                         .setContentText(caption);
