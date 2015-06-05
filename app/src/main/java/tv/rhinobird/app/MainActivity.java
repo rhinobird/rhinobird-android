@@ -2,66 +2,47 @@ package tv.rhinobird.app;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-
-import android.app.ActionBar;
 import android.app.ActivityManager;
-import android.app.Fragment;
-import android.app.FragmentManager;
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.hardware.*;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraManager;
 import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.support.v4.widget.DrawerLayout;
-import android.webkit.SslErrorHandler;
+import android.view.Window;
 import android.webkit.ValueCallback;
+import android.webkit.WebView;
+
 import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkView;
 import org.xwalk.core.internal.XWalkViewInternal;
 
-import java.util.Set;
 
 import tv.rhinobird.app.R;
 
 
-public class MainActivity extends Activity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+public class MainActivity extends Activity{
 
     private static final String TAG = MainActivity.class.getSimpleName();
-
-    /**
-     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
-     */
-    private NavigationDrawerFragment mNavigationDrawerFragment;
-
-    /**
-     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
-     */
-    private CharSequence mTitle;
+    private XWalkView xWalkWebView;
+    private WebView webLoader;
+    private static final String wrapUrl = "https://beta.rhinobird.tv/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
-        getActionBar().hide();
-
-        mNavigationDrawerFragment = (NavigationDrawerFragment)
-                getFragmentManager().findFragmentById(R.id.navigation_drawer);
-        mTitle = getTitle();
-
-        // Set up the drawer.
-        mNavigationDrawerFragment.setUp(
-                R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
+        initWeb();
+        loadWeb();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
@@ -70,7 +51,7 @@ public class MainActivity extends Activity
             theme.resolveAttribute(R.attr.colorPrimary, typedValue, true);
             int color = typedValue.data;
 
-            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.icon_rhino);
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
             ActivityManager.TaskDescription td = new ActivityManager.TaskDescription(null, bm, color);
 
             setTaskDescription(td);
@@ -78,169 +59,94 @@ public class MainActivity extends Activity
 
         }
     }
-
+/*
     @Override
-    public void onNavigationDrawerItemSelected(int position) {
-        // update the main content by replacing fragments
-        FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
-                .commit();
+    public void onStart() {
+        loadWeb();
     }
-
-    public void onSectionAttached(int number) {
-
-    }
-
-    public void restoreActionBar() {
-        ActionBar actionBar = getActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(mTitle);
-    }
-
-
+*/
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        if (!mNavigationDrawerFragment.isDrawerOpen()) {
-            // Only show items in the action bar relevant to this screen
-            // if the drawer is not showing. Otherwise, let the drawer
-            // decide what to show in the action bar.
-            getMenuInflater().inflate(R.menu.main, menu);
-            restoreActionBar();
-            return true;
-        }
-        return super.onCreateOptionsMenu(menu);
+    public void onPause() {
+        super.onPause();
+            if (xWalkWebView != null) {
+                xWalkWebView.pauseTimers();
+                xWalkWebView.onHide();
+            }
+
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+    public void onStop() {
+        super.onStop();
+        xWalkWebView.evaluateJavascript("if(window.localStream){window.localStream.stop();}", null);
+        xWalkWebView.stopLoading();
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
+   @Override
+    public void onResume() {
+       super.onResume();
+       if (xWalkWebView != null) {
+           xWalkWebView.resumeTimers();
+           xWalkWebView.onShow();
+       }
+       //loadWeb();
 
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
+    }
+    @Override
+    public void onRestart() {
+        super.onRestart();
+        xWalkWebView.resumeTimers();
+        //loadWeb();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (xWalkWebView != null) {
+            xWalkWebView.onDestroy();
         }
+    }
 
-        private XWalkView xWalkWebView;
-        private XWalkView xWalkWebView1;
-        private ValueCallback<Boolean> callback;
-        private final String wrapUrl = "https://beta.rhinobird.tv/";
-        public PlaceholderFragment() {
+    public void initWeb(){
+        webLoader = (WebView) findViewById(R.id.fragment_loader_webview);
+        webLoader.loadUrl("file:///android_asset/index.html");
+
+        xWalkWebView = (XWalkView) findViewById(R.id.fragment_main_webview);
+        xWalkWebView.clearCache(true);
+        // turn on debugging
+        XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, false);
+    }
+
+    public void loadWeb(){
+        xWalkWebView.setVisibility(View.GONE);
+        if (webLoader.getVisibility() == View.GONE){
+            webLoader.setVisibility(View.VISIBLE);
         }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-
-            xWalkWebView1 = (XWalkView) rootView.findViewById(R.id.fragment_loader_webview);
-            xWalkWebView1.load("file:///android_asset/index.html", null);
-
-            xWalkWebView = (XWalkView) rootView.findViewById(R.id.fragment_main_webview);
-            xWalkWebView.clearCache(true);
-            xWalkWebView.setVisibility(View.GONE);
-      /*      XWalkResourceClient client = new XWalkResourceClient(xWalkWebView);
-            client.onReceivedSslError();*/
-            xWalkWebView.setResourceClient(new XWalkResourceClient(xWalkWebView){
-                @Override
-                public void onLoadFinished(XWalkView view, String url) {
-                    super.onLoadFinished(xWalkWebView, url);
-                    Log.d(TAG, "ya cargo la pagg!!");
-                    xWalkWebView.setVisibility(View.VISIBLE);
-                    xWalkWebView1.setVisibility(View.GONE);
-                }
-                //@Override
+        xWalkWebView.setResourceClient(new XWalkResourceClient(xWalkWebView){
+            @Override
+            public void onLoadFinished(XWalkView view, String url) {
+                super.onLoadFinished(xWalkWebView, url);
+                xWalkWebView.setVisibility(View.VISIBLE);
+                webLoader.setVisibility(View.GONE);
+            }
+            //@Override
 /*                public void onReceivedSslError (XWalkView view, SslErrorHandler handler, SslError error) {
-                    super.onReceivedSslError(xWalkWebView, ValueCallback<Boolean> callback, error);
-                    callback.onReceiveValue(true);
-                    Log.d(TAG, error.toString());
-                    handler.proceed();
-                }*/
-                //@Override
-                public void onReceivedSslError(XWalkViewInternal view, ValueCallback<Boolean> callback, SslError error){
-                    callback.onReceiveValue(true);
-                    Log.d(TAG, error.toString());
-
-                }
-
-
-            });
-            if (DetectConnection.checkInternetConnection(getActivity ())) {
-                xWalkWebView.load(wrapUrl, null);
+                super.onReceivedSslError(xWalkWebView, ValueCallback<Boolean> callback, error);
+                callback.onReceiveValue(true);
+                Log.d(TAG, error.toString());
+                handler.proceed();
+            }*/
+            public void onReceivedSslError(XWalkViewInternal view, ValueCallback<Boolean> callback, SslError error){
+                callback.onReceiveValue(true);
+                Log.d(TAG, error.toString());
             }
-            else {
-              xWalkWebView.load("file:///android_asset/error_page.html", null);
-            }
-
-//            XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
-
-            return rootView;
+        });
+        if (DetectConnection.checkInternetConnection( this)) {
+            xWalkWebView.load(wrapUrl, null);
         }
-        @Override
-        public void onPause() {
-            super.onPause();
-                if (xWalkWebView != null) {
-                    xWalkWebView.pauseTimers();
-                    xWalkWebView.onHide();
-                }
-
+        else {
+            xWalkWebView.load("file:///android_asset/error_page.html", null);
         }
-
-/*        @Override
-        public void onResume() {
-            super.onResume();
-            if (DetectConnection.checkInternetConnection(getActivity ())) {
-                xWalkWebView.load(wrapUrl, null);
-            }
-            else {
-                xWalkWebView.load("file:///android_asset/error_page.html", null);
-            }
-
-        }*/
-        @Override
-        public void onStop() {
-            super.onStop();
-            /**
-             * When the application falls into the background we want to stop the media stream
-             * such that the camera is free to use by other apps.
-             */
-            xWalkWebView.evaluateJavascript("if(window.localStream){window.localStream.stop();}", null);
-            xWalkWebView.stopLoading();
-        }
-
-        @Override
-        public void onAttach(Activity activity) {
-            super.onAttach(activity);
-            ((MainActivity) activity).onSectionAttached(
-                    getArguments().getInt(ARG_SECTION_NUMBER));
-        }
-
 
     }
 
