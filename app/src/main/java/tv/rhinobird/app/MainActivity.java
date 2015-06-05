@@ -33,26 +33,14 @@ public class MainActivity extends Activity{
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private XWalkView xWalkWebView;
-    //private XWalkView xWalkLoader;
     private WebView webLoader;
     private static final String wrapUrl = "https://beta.rhinobird.tv/";
-    //private Camera mCamera;//getVideoStabilization()
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
-/*        int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
-        mCamera = Camera.open(cameraId);
-        Camera.Parameters params = mCamera.getParameters();
-        boolean asd = params.getVideoStabilization();
-        params.setVideoStabilization(false);
-
-        Log.d(TAG, "soporta estabilizacion??!");
-        Log.d(TAG, String.valueOf(asd));
-        mCamera.release();*/
-
         initWeb();
         loadWeb();
 
@@ -71,95 +59,95 @@ public class MainActivity extends Activity{
 
         }
     }
-
-        @Override
-        public void onPause() {
-            super.onPause();
-                if (xWalkWebView != null) {
-                    xWalkWebView.pauseTimers();
-                    xWalkWebView.onHide();
-                }
-
-        }
-
-        @Override
-        public void onStop() {
-            super.onStop();
-            /**
-             * When the application falls into the background we want to stop the media stream
-             * such that the camera is free to use by other apps.
-             */
-            xWalkWebView.evaluateJavascript("if(window.localStream){window.localStream.stop();}", null);
-            xWalkWebView.stopLoading();
-        }
-       @Override
-        public void onResume() {
-           super.onResume();
-           if (xWalkWebView != null) {
-               xWalkWebView.resumeTimers();
-               xWalkWebView.onShow();
-           }
-           //loadWeb();
-
-        }
-        @Override
-        public void onRestart() {
-            super.onRestart();
-            xWalkWebView.resumeTimers();
-            //loadWeb();
-        }
-        @Override
-        protected void onDestroy() {
-            super.onDestroy();
+/*
+    @Override
+    public void onStart() {
+        loadWeb();
+    }
+*/
+    @Override
+    public void onPause() {
+        super.onPause();
             if (xWalkWebView != null) {
-                xWalkWebView.onDestroy();
+                xWalkWebView.pauseTimers();
+                xWalkWebView.onHide();
             }
-        }
-        public void initWeb(){
-            //xWalkLoader = (XWalkView) findViewById(R.id.fragment_loader_webview);
-            //xWalkLoader.load("file:///android_asset/index.html", null);
-            webLoader = (WebView) findViewById(R.id.fragment_loader_webview);
-            webLoader.loadUrl("file:///android_asset/index.html");
 
-            xWalkWebView = (XWalkView) findViewById(R.id.fragment_main_webview);
-            xWalkWebView.clearCache(true);
-            // turn on debugging
-            XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
-        }
+    }
 
-        public void loadWeb(){
-            //XWalkResourceClient client = new XWalkResourceClient(xWalkWebView);
-            //xWalkLoader.setVisibility(View.VISIBLE);
-            xWalkWebView.setVisibility(View.GONE);
-            if (webLoader.getVisibility() == View.GONE){
-                webLoader.setVisibility(View.VISIBLE);
+    @Override
+    public void onStop() {
+        super.onStop();
+        xWalkWebView.evaluateJavascript("if(window.localStream){window.localStream.stop();}", null);
+        xWalkWebView.stopLoading();
+    }
+
+   @Override
+    public void onResume() {
+       super.onResume();
+       if (xWalkWebView != null) {
+           xWalkWebView.resumeTimers();
+           xWalkWebView.onShow();
+       }
+       //loadWeb();
+
+    }
+    @Override
+    public void onRestart() {
+        super.onRestart();
+        xWalkWebView.resumeTimers();
+        //loadWeb();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (xWalkWebView != null) {
+            xWalkWebView.onDestroy();
+        }
+    }
+
+    public void initWeb(){
+        webLoader = (WebView) findViewById(R.id.fragment_loader_webview);
+        webLoader.loadUrl("file:///android_asset/index.html");
+
+        xWalkWebView = (XWalkView) findViewById(R.id.fragment_main_webview);
+        xWalkWebView.clearCache(true);
+        // turn on debugging
+        XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, false);
+    }
+
+    public void loadWeb(){
+        xWalkWebView.setVisibility(View.GONE);
+        if (webLoader.getVisibility() == View.GONE){
+            webLoader.setVisibility(View.VISIBLE);
+        }
+        xWalkWebView.setResourceClient(new XWalkResourceClient(xWalkWebView){
+            @Override
+            public void onLoadFinished(XWalkView view, String url) {
+                super.onLoadFinished(xWalkWebView, url);
+                xWalkWebView.setVisibility(View.VISIBLE);
+                webLoader.setVisibility(View.GONE);
             }
-            xWalkWebView.setResourceClient(new XWalkResourceClient(xWalkWebView){
-                @Override
-                public void onLoadFinished(XWalkView view, String url) {
-                    super.onLoadFinished(xWalkWebView, url);
-                    xWalkWebView.setVisibility(View.VISIBLE);
-                    webLoader.setVisibility(View.GONE);
-                }
-                //@Override
+            //@Override
 /*                public void onReceivedSslError (XWalkView view, SslErrorHandler handler, SslError error) {
-                    super.onReceivedSslError(xWalkWebView, ValueCallback<Boolean> callback, error);
-                    callback.onReceiveValue(true);
-                    Log.d(TAG, error.toString());
-                    handler.proceed();
-                }*/
-                public void onReceivedSslError(XWalkViewInternal view, ValueCallback<Boolean> callback, SslError error){
-                    callback.onReceiveValue(true);
-                    Log.d(TAG, error.toString());
-                }
-            });
-            if (DetectConnection.checkInternetConnection( this)) {
-                xWalkWebView.load(wrapUrl, null);
+                super.onReceivedSslError(xWalkWebView, ValueCallback<Boolean> callback, error);
+                callback.onReceiveValue(true);
+                Log.d(TAG, error.toString());
+                handler.proceed();
+            }*/
+            public void onReceivedSslError(XWalkViewInternal view, ValueCallback<Boolean> callback, SslError error){
+                callback.onReceiveValue(true);
+                Log.d(TAG, error.toString());
             }
-            else {
-                xWalkWebView.load("file:///android_asset/error_page.html", null);
-            }
-
+        });
+        if (DetectConnection.checkInternetConnection( this)) {
+            xWalkWebView.load(wrapUrl, null);
         }
+        else {
+            xWalkWebView.load("file:///android_asset/error_page.html", null);
+        }
+
+    }
 
 }
