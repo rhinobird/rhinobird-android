@@ -14,7 +14,7 @@ android {
     defaultConfig {
         applicationId 'tv.rhinobird.app'
         minSdkVersion 18
-        targetSdkVersion 2
+        targetSdkVersion 22
         versionCode 12
         versionName '1.1.2'
     }
@@ -41,8 +41,8 @@ repositories {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     // You must install or update the Support Repository through the SDK manager to use this dependency.
-    compile 'com.android.support:support-v4:21.0.0'
-    compile 'com.android.support:appcompat-v7:21.0.0'
+    compile 'com.android.support:support-v4:22.2.0'
+    compile 'com.android.support:appcompat-v7:22.2.0'
     compile 'org.xwalk:xwalk_core_library:12.41.296.5'
     compile 'com.google.android.gms:play-services:7.3.0'
 }
