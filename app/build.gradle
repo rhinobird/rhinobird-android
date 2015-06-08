@@ -22,12 +22,12 @@ android {
         release {
             //minifyEnabled true
             // proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.config
+            //signingConfig signingConfigs.config
             buildConfigField "String", "GCM_PROJECT_ID", "\"338648526868\""
         }
         debug {
             //signingConfig signingCIonfigs.config
-            buildConfigField "String", "GCM_PROJECT_ID", "\"197045009507\""
+            buildConfigField "String", "GCM_PROJECT_ID", "\"338648526868\""
         }
     }
 //    productFlavors {
