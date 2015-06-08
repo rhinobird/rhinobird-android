@@ -5,24 +5,24 @@ android {
         config {
             keyAlias 'rhinoadmin'
             keyPassword 'rhinoadmin'
-            storeFile file('/Users/s2d2/Documents/keystoreandroid2.jks')
+            storeFile file('../keystoreandroid2.jks')
             storePassword 'rhinoadmin'
         }
     }
-    compileSdkVersion 21
-    buildToolsVersion '21.1.2'
+    compileSdkVersion 22
+    buildToolsVersion '22.0.1'
     defaultConfig {
         applicationId 'tv.rhinobird.app'
         minSdkVersion 18
-        targetSdkVersion 21
-        versionCode 6
-        versionName "1.1"
+        targetSdkVersion 2
+        versionCode 12
+        versionName '1.1.2'
     }
     buildTypes {
         release {
-            //minifyEnabled true
-            // proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            //signingConfig signingConfigs.config
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
             buildConfigField "String", "GCM_PROJECT_ID", "\"338648526868\""
         }
         debug {
@@ -30,8 +30,8 @@ android {
             buildConfigField "String", "GCM_PROJECT_ID", "\"338648526868\""
         }
     }
-//    productFlavors {
-  //  }
+    productFlavors {
+    }
 }
 repositories {
     maven {
