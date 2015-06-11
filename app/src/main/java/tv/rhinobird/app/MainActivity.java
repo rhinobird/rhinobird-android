@@ -1,15 +1,10 @@
 package tv.rhinobird.app;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.hardware.*;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraManager;
 import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,7 +29,7 @@ public class MainActivity extends Activity{
     private static final String TAG = MainActivity.class.getSimpleName();
     private XWalkView xWalkWebView;
     private WebView webLoader;
-    private static final String wrapUrl = "https://beta.rhinobird.tv/";
+    private static final String wrapUrl = "https://staging.rhinobird.tv/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,7 +109,7 @@ public class MainActivity extends Activity{
         xWalkWebView = (XWalkView) findViewById(R.id.fragment_main_webview);
         xWalkWebView.clearCache(true);
         // turn on debugging
-        XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, false);
+        XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
     }
 
     public void loadWeb(){
