@@ -12,6 +12,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.Window;
+import android.webkit.GeolocationPermissions;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -52,11 +53,7 @@ public class MainActivity extends Activity{
             bm.recycle();
 
         }
-    }
 
-    @Override
-    public void onStart() {
-        super.onStart();
         loadWeb();
     }
 
@@ -86,7 +83,6 @@ public class MainActivity extends Activity{
            xWalkWebView.resumeTimers();
            xWalkWebView.onShow();
        }
-       //loadWeb();
 
     }
     @Override
@@ -95,7 +91,6 @@ public class MainActivity extends Activity{
         if (xWalkWebView != null) {
             xWalkWebView.resumeTimers();
         }
-        //loadWeb();
     }
 
     @Override
@@ -132,6 +127,7 @@ public class MainActivity extends Activity{
         });
         // turn on debugging
         XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, false);
+
     }
 
     private void initNativeWebview() {
@@ -152,6 +148,12 @@ public class MainActivity extends Activity{
         });
         mWebRTCWebView.setWebChromeClient(new WebChromeClient() {
 
+            @Override
+            public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
+                // Allow geo location permissions
+                callback.invoke(origin, true, false);
+                super.onGeolocationPermissionsShowPrompt(origin, callback);
+            }
 
             @Override
             public void onPermissionRequest(final PermissionRequest request) {
