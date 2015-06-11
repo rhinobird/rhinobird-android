@@ -20,7 +20,9 @@ import android.view.Window;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkResourceClient;
@@ -35,6 +37,7 @@ public class MainActivity extends Activity{
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private XWalkView xWalkWebView;
+    private WebView mWebRTCWebView;
     private WebView webLoader;
     private static final String wrapUrl = "https://beta.rhinobird.tv/";
 
@@ -44,7 +47,6 @@ public class MainActivity extends Activity{
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
         initWeb();
-        //loadWeb();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
@@ -81,8 +83,10 @@ public class MainActivity extends Activity{
     @Override
     public void onStop() {
         super.onStop();
-        xWalkWebView.evaluateJavascript("if(window.localStream){window.localStream.stop();}", null);
-        xWalkWebView.stopLoading();
+        if (xWalkWebView != null) {
+            xWalkWebView.evaluateJavascript("if(window.localStream){window.localStream.stop();}", null);
+            xWalkWebView.stopLoading();
+        }
     }
 
    @Override
@@ -98,7 +102,9 @@ public class MainActivity extends Activity{
     @Override
     public void onRestart() {
         super.onRestart();
-        xWalkWebView.resumeTimers();
+        if (xWalkWebView != null) {
+            xWalkWebView.resumeTimers();
+        }
         //loadWeb();
     }
 
@@ -109,33 +115,44 @@ public class MainActivity extends Activity{
             xWalkWebView.onDestroy();
         }
     }
-    private WebView mWebRTCWebView;
 
     public void initWeb(){
         webLoader = (WebView) findViewById(R.id.fragment_loader_webview);
         webLoader.loadUrl("file:///android_asset/index.html");
-  /*      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             mWebRTCWebView = (WebView) findViewById(R.id.fragment_main_webview);
+            WebSettings settings = mWebRTCWebView.getSettings();
+            settings.setJavaScriptEnabled(true);
+            settings.setJavaScriptCanOpenWindowsAutomatically(true);
+            WebView.setWebContentsDebuggingEnabled(true);
+
         }
-        else{*/
+        else{
             xWalkWebView = (XWalkView) findViewById(R.id.fragment_main_webview);
             xWalkWebView.clearCache(true);
             // turn on debugging
             XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, false);
-       // }
+        }
 
     }
 
 
 
     public void loadWeb(){
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             mWebRTCWebView.setVisibility(View.GONE);
-            if (webLoader.getVisibility() == View.GONE){
-                webLoader.setVisibility(View.VISIBLE);
-            }
+            webLoader.setVisibility(View.VISIBLE);
             mWebRTCWebView.loadUrl(wrapUrl);
+            mWebRTCWebView.setWebViewClient(new WebViewClient() {
+                @Override
+                public void onPageFinished(WebView view, String url) {
+                    super.onPageFinished(view, url);
+                    mWebRTCWebView.setVisibility(View.VISIBLE);
+                    webLoader.setVisibility(View.GONE);
+                }
+            });
             mWebRTCWebView.setWebChromeClient(new WebChromeClient() {
+
 
                 @Override
                 public void onPermissionRequest(final PermissionRequest request) {
@@ -153,11 +170,9 @@ public class MainActivity extends Activity{
                     });
                 }
             });
-            mWebRTCWebView.setVisibility(View.VISIBLE);
-            webLoader.setVisibility(View.GONE);
         }
 
-        else{*/
+        else{
             xWalkWebView.setVisibility(View.GONE);
             if (webLoader.getVisibility() == View.GONE){
                 webLoader.setVisibility(View.VISIBLE);
@@ -178,7 +193,7 @@ public class MainActivity extends Activity{
                 xWalkWebView.load("file:///android_asset/error_page.html", null);
             }
 
-        //}
+        }
 
     }
 
