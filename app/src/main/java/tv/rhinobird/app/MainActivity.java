@@ -17,7 +17,9 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.Window;
+import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
 import org.xwalk.core.XWalkPreferences;
@@ -42,7 +44,7 @@ public class MainActivity extends Activity{
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
         initWeb();
-        loadWeb();
+        //loadWeb();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
@@ -59,12 +61,13 @@ public class MainActivity extends Activity{
 
         }
     }
-/*
+
     @Override
     public void onStart() {
+        super.onStart();
         loadWeb();
     }
-*/
+
     @Override
     public void onPause() {
         super.onPause();
@@ -106,47 +109,76 @@ public class MainActivity extends Activity{
             xWalkWebView.onDestroy();
         }
     }
+    private WebView mWebRTCWebView;
 
     public void initWeb(){
         webLoader = (WebView) findViewById(R.id.fragment_loader_webview);
         webLoader.loadUrl("file:///android_asset/index.html");
+  /*      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mWebRTCWebView = (WebView) findViewById(R.id.fragment_main_webview);
+        }
+        else{*/
+            xWalkWebView = (XWalkView) findViewById(R.id.fragment_main_webview);
+            xWalkWebView.clearCache(true);
+            // turn on debugging
+            XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, false);
+       // }
 
-        xWalkWebView = (XWalkView) findViewById(R.id.fragment_main_webview);
-        xWalkWebView.clearCache(true);
-        // turn on debugging
-        XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, false);
     }
 
+
+
     public void loadWeb(){
-        xWalkWebView.setVisibility(View.GONE);
-        if (webLoader.getVisibility() == View.GONE){
-            webLoader.setVisibility(View.VISIBLE);
-        }
-        xWalkWebView.setResourceClient(new XWalkResourceClient(xWalkWebView){
-            @Override
-            public void onLoadFinished(XWalkView view, String url) {
-                super.onLoadFinished(xWalkWebView, url);
-                xWalkWebView.setVisibility(View.VISIBLE);
-                webLoader.setVisibility(View.GONE);
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mWebRTCWebView.setVisibility(View.GONE);
+            if (webLoader.getVisibility() == View.GONE){
+                webLoader.setVisibility(View.VISIBLE);
             }
-            //@Override
-/*                public void onReceivedSslError (XWalkView view, SslErrorHandler handler, SslError error) {
-                super.onReceivedSslError(xWalkWebView, ValueCallback<Boolean> callback, error);
-                callback.onReceiveValue(true);
-                Log.d(TAG, error.toString());
-                handler.proceed();
-            }*/
-            public void onReceivedSslError(XWalkViewInternal view, ValueCallback<Boolean> callback, SslError error){
-                callback.onReceiveValue(true);
-                Log.d(TAG, error.toString());
+            mWebRTCWebView.loadUrl(wrapUrl);
+            mWebRTCWebView.setWebChromeClient(new WebChromeClient() {
+
+                @Override
+                public void onPermissionRequest(final PermissionRequest request) {
+                    Log.d(TAG, "onPermissionRequest");
+                    runOnUiThread(new Runnable() {
+                        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+                        @Override
+                        public void run() {
+                            if (request.getOrigin().toString().equals(wrapUrl)) {
+                                request.grant(request.getResources());
+                            } else {
+                                request.deny();
+                            }
+                        }
+                    });
+                }
+            });
+            mWebRTCWebView.setVisibility(View.VISIBLE);
+            webLoader.setVisibility(View.GONE);
+        }
+
+        else{*/
+            xWalkWebView.setVisibility(View.GONE);
+            if (webLoader.getVisibility() == View.GONE){
+                webLoader.setVisibility(View.VISIBLE);
             }
-        });
-        if (DetectConnection.checkInternetConnection( this)) {
-            xWalkWebView.load(wrapUrl, null);
-        }
-        else {
-            xWalkWebView.load("file:///android_asset/error_page.html", null);
-        }
+            xWalkWebView.setResourceClient(new XWalkResourceClient(xWalkWebView) {
+                @Override
+                public void onLoadFinished(XWalkView view, String url) {
+                    super.onLoadFinished(xWalkWebView, url);
+                    xWalkWebView.setVisibility(View.VISIBLE);
+                    webLoader.setVisibility(View.GONE);
+                }
+
+            });
+            if (DetectConnection.checkInternetConnection( this)) {
+                xWalkWebView.load(wrapUrl, null);
+            }
+            else {
+                xWalkWebView.load("file:///android_asset/error_page.html", null);
+            }
+
+        //}
 
     }
 
