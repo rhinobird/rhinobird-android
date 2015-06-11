@@ -110,81 +110,97 @@ public class MainActivity extends Activity{
         webLoader = (WebView) findViewById(R.id.fragment_loader_webview);
         webLoader.loadUrl("file:///android_asset/index.html");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mWebRTCWebView = (WebView) findViewById(R.id.fragment_main_webview);
-            WebSettings settings = mWebRTCWebView.getSettings();
-            settings.setJavaScriptEnabled(true);
-            settings.setJavaScriptCanOpenWindowsAutomatically(true);
-            WebView.setWebContentsDebuggingEnabled(true);
-
+            initNativeWebview();
         }
         else{
-            xWalkWebView = (XWalkView) findViewById(R.id.fragment_main_webview);
-            xWalkWebView.clearCache(true);
-            // turn on debugging
-            XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, false);
+            initxWalkWebview();
         }
 
     }
 
+    private void initxWalkWebview() {
+        xWalkWebView = (XWalkView) findViewById(R.id.fragment_main_webview);
+        xWalkWebView.clearCache(true);
+        xWalkWebView.setResourceClient(new XWalkResourceClient(xWalkWebView) {
+            @Override
+            public void onLoadFinished(XWalkView view, String url) {
+                super.onLoadFinished(xWalkWebView, url);
+                xWalkWebView.setVisibility(View.VISIBLE);
+                webLoader.setVisibility(View.GONE);
+            }
+
+        });
+        // turn on debugging
+        XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, false);
+    }
+
+    private void initNativeWebview() {
+        mWebRTCWebView = (WebView) findViewById(R.id.fragment_main_webview);
+        WebSettings settings = mWebRTCWebView.getSettings();
+
+        settings.setJavaScriptEnabled(true);
+        settings.setJavaScriptCanOpenWindowsAutomatically(true);
+
+        WebView.setWebContentsDebuggingEnabled(true);
+        mWebRTCWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                mWebRTCWebView.setVisibility(View.VISIBLE);
+                webLoader.setVisibility(View.GONE);
+            }
+        });
+        mWebRTCWebView.setWebChromeClient(new WebChromeClient() {
+
+
+            @Override
+            public void onPermissionRequest(final PermissionRequest request) {
+                Log.d(TAG, "onPermissionRequest");
+                runOnUiThread(new Runnable() {
+                    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+                    @Override
+                    public void run() {
+                        if (request.getOrigin().toString().equals(wrapUrl)) {
+                            request.grant(request.getResources());
+                        } else {
+                            request.deny();
+                        }
+                    }
+                });
+            }
+        });
+    }
 
 
     public void loadWeb(){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mWebRTCWebView.setVisibility(View.GONE);
+        if (webLoader.getVisibility() == View.GONE){
             webLoader.setVisibility(View.VISIBLE);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            loadNative();
+        } else{
+            loadxWalk();
+        }
+    }
+
+    private void loadxWalk() {
+        xWalkWebView.setVisibility(View.GONE);
+        if (DetectConnection.checkInternetConnection(this)) {
+            xWalkWebView.load(wrapUrl, null);
+        }
+        else {
+            xWalkWebView.load("file:///android_asset/error_page.html", null);
+        }
+    }
+
+    private void loadNative() {
+        mWebRTCWebView.setVisibility(View.GONE);
+        if (DetectConnection.checkInternetConnection(this)) {
             mWebRTCWebView.loadUrl(wrapUrl);
-            mWebRTCWebView.setWebViewClient(new WebViewClient() {
-                @Override
-                public void onPageFinished(WebView view, String url) {
-                    super.onPageFinished(view, url);
-                    mWebRTCWebView.setVisibility(View.VISIBLE);
-                    webLoader.setVisibility(View.GONE);
-                }
-            });
-            mWebRTCWebView.setWebChromeClient(new WebChromeClient() {
-
-
-                @Override
-                public void onPermissionRequest(final PermissionRequest request) {
-                    Log.d(TAG, "onPermissionRequest");
-                    runOnUiThread(new Runnable() {
-                        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-                        @Override
-                        public void run() {
-                            if (request.getOrigin().toString().equals(wrapUrl)) {
-                                request.grant(request.getResources());
-                            } else {
-                                request.deny();
-                            }
-                        }
-                    });
-                }
-            });
         }
-
-        else{
-            xWalkWebView.setVisibility(View.GONE);
-            if (webLoader.getVisibility() == View.GONE){
-                webLoader.setVisibility(View.VISIBLE);
-            }
-            xWalkWebView.setResourceClient(new XWalkResourceClient(xWalkWebView) {
-                @Override
-                public void onLoadFinished(XWalkView view, String url) {
-                    super.onLoadFinished(xWalkWebView, url);
-                    xWalkWebView.setVisibility(View.VISIBLE);
-                    webLoader.setVisibility(View.GONE);
-                }
-
-            });
-            if (DetectConnection.checkInternetConnection( this)) {
-                xWalkWebView.load(wrapUrl, null);
-            }
-            else {
-                xWalkWebView.load("file:///android_asset/error_page.html", null);
-            }
-
+        else {
+            mWebRTCWebView.loadUrl("file:///android_asset/error_page.html");
         }
-
     }
 
 }
