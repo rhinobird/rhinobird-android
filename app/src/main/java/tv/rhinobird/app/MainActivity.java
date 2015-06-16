@@ -196,7 +196,7 @@ public class MainActivity extends Activity{
     }
 
     private void loadNative() {
-        mWebRTCWebView.setVisibility(View.GONE);
+        //mWebRTCWebView.setVisibility(View.GONE);
         if (DetectConnection.checkInternetConnection(this)) {
             mWebRTCWebView.loadUrl(wrapUrl);
         }
