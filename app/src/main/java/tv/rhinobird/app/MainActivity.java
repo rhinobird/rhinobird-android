@@ -31,6 +31,7 @@ public class MainActivity extends Activity{
     private WebView mWebRTCWebView;
     private WebView webLoader;
     private static final String wrapUrl = "https://beta.rhinobird.tv/";
+    private String mUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +53,11 @@ public class MainActivity extends Activity{
             setTaskDescription(td);
             bm.recycle();
 
+        }
+
+        mUrl = getIntent().getStringExtra("url");
+        if (mUrl == null) {
+            mUrl = wrapUrl;
         }
 
         loadWeb();
@@ -162,7 +168,7 @@ public class MainActivity extends Activity{
                     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
                     @Override
                     public void run() {
-                        if (request.getOrigin().toString().equals(wrapUrl)) {
+                        if (request.getOrigin().toString().equals(mUrl)) {
                             request.grant(request.getResources());
                         } else {
                             request.deny();
@@ -188,7 +194,7 @@ public class MainActivity extends Activity{
     private void loadxWalk() {
         xWalkWebView.setVisibility(View.GONE);
         if (DetectConnection.checkInternetConnection(this)) {
-            xWalkWebView.load(wrapUrl, null);
+            xWalkWebView.load(mUrl, null);
         }
         else {
             xWalkWebView.load("file:///android_asset/error_page.html", null);
@@ -198,7 +204,7 @@ public class MainActivity extends Activity{
     private void loadNative() {
         //mWebRTCWebView.setVisibility(View.GONE);
         if (DetectConnection.checkInternetConnection(this)) {
-            mWebRTCWebView.loadUrl(wrapUrl);
+            mWebRTCWebView.loadUrl(mUrl);
         }
         else {
             mWebRTCWebView.loadUrl("file:///android_asset/error_page.html");
