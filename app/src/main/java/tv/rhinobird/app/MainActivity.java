@@ -3,9 +3,11 @@ package tv.rhinobird.app;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -55,9 +57,16 @@ public class MainActivity extends Activity{
 
         }
 
-        mUrl = getIntent().getStringExtra("url");
+        Intent intent = getIntent();
+        mUrl = intent.getStringExtra("url");
         if (mUrl == null) {
             mUrl = wrapUrl;
+        }
+
+        if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+            Uri uri = intent.getData();
+            String streamId = uri.getLastPathSegment();
+            mUrl += "stream/" + streamId;
         }
 
         loadWeb();
