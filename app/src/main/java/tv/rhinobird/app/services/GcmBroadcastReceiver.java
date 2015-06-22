@@ -26,8 +26,11 @@ public class GcmBroadcastReceiver extends BroadcastReceiver {
         mContext = context;
         extras = intent.getExtras();
 
-        if (extras.getString("notificationType").equals("new_live_stream")) {
-            showStreamNotification();
+        if (extras != null) {
+            String notificationType = extras.getString("notificationType");
+            if (notificationType != null && notificationType.equals("new_live_stream")) {
+                showStreamNotification();
+            }
         }
 
     }
