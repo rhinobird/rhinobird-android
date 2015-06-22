@@ -131,6 +131,7 @@ public class MainActivity extends Activity{
     private void initxWalkWebview() {
         xWalkWebView = (XWalkView) findViewById(R.id.fragment_main_webview);
         xWalkWebView.clearCache(true);
+        xWalkWebView.addJavascriptInterface(new RbWebAppInterface(this), "RbWebApp");
         xWalkWebView.setResourceClient(new XWalkResourceClient(xWalkWebView) {
             @Override
             public void onLoadFinished(XWalkView view, String url) {
@@ -161,6 +162,7 @@ public class MainActivity extends Activity{
                 webLoader.setVisibility(View.GONE);
             }
         });
+        mWebRTCWebView.addJavascriptInterface(new RbWebAppInterface(this), "RbWebApp");
         mWebRTCWebView.setWebChromeClient(new WebChromeClient() {
 
             @Override

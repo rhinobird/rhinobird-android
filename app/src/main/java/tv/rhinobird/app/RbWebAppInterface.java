@@ -18,9 +18,7 @@ public class RbWebAppInterface {
         mContext = c;
     }
 
-    /**
-     * Show a toast from the web page
-     */
+    @android.webkit.JavascriptInterface
     @JavascriptInterface
     public String getRegistrationId() {
         return MainApp.getRegistrationId();
