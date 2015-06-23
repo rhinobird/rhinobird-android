@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -47,14 +48,20 @@ public class GcmBroadcastReceiver extends BroadcastReceiver {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(mContext)
                         .setContentIntent(resultPendingIntent)
-                        .setSmallIcon(R.mipmap.ic_launcher)
+                        .setSmallIcon(getNotificationIcon())
                         .setContentTitle(username + " is going live!")
                         .setVibrate(pattern)
+                        .setColor(mContext.getResources().getColor(R.color.red))
                         .setContentText(caption);
 
         NotificationManager mNotificationManager =
                 (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(0, mBuilder.build());
+    }
+
+    private int getNotificationIcon() {
+        boolean whiteIcon = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+        return whiteIcon ? R.drawable.ic_notif : R.mipmap.ic_launcher;
     }
 
     private PendingIntent getPendingIntent(String url) {
