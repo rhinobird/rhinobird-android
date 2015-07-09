@@ -155,6 +155,7 @@ public class MainActivity extends Activity{
 
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
+        settings.setMediaPlaybackRequiresUserGesture(false);
 
         WebView.setWebContentsDebuggingEnabled(true);
         mWebRTCWebView.setWebViewClient(new WebViewClient() {
