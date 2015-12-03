@@ -5,18 +5,18 @@ android {
         config {
             keyAlias 'rhinoadmin'
             keyPassword 'rhinoadmin'
-            storeFile file('../keystoreandroid2.jks')
+            storeFile file('keystoreandroid2.jks')
             storePassword 'rhinoadmin'
         }
     }
-    compileSdkVersion 22
-    buildToolsVersion '22.0.1'
+    compileSdkVersion 23
+    buildToolsVersion '23.0.1'
     defaultConfig {
         applicationId 'tv.rhinobird.app'
         minSdkVersion 18
-        targetSdkVersion 22
-        versionCode 15
-        versionName '1.1.4'
+        targetSdkVersion 23
+        versionCode 18
+        versionName '1.1.5'
     }
     buildTypes {
         release {
@@ -41,8 +41,8 @@ repositories {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     // You must install or update the Support Repository through the SDK manager to use this dependency.
-    compile 'com.android.support:support-v4:22.2.0'
-    compile 'com.android.support:appcompat-v7:22.2.0'
-    compile 'org.xwalk:xwalk_core_library:12.41.296.5'
+    compile 'com.android.support:support-v4:23.1.1'
+    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'org.xwalk:xwalk_core_library:14.43.343.23'
     compile 'com.google.android.gms:play-services:7.3.0'
 }

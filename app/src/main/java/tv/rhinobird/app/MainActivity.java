@@ -69,7 +69,7 @@ public class MainActivity extends Activity{
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             Uri uri = intent.getData();
             String streamId = uri.getLastPathSegment();
-            mUrl += "stream/" + streamId;
+            mUrl += "replay/" + streamId;
         }
 
         loadWeb();
@@ -122,7 +122,7 @@ public class MainActivity extends Activity{
     public void initWeb(){
         webLoader = (WebView) findViewById(R.id.fragment_loader_webview);
         webLoader.loadUrl("file:///android_asset/index.html");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
             initNativeWebview();
         }
         else{
@@ -199,7 +199,7 @@ public class MainActivity extends Activity{
         if (webLoader.getVisibility() == View.GONE){
             webLoader.setVisibility(View.VISIBLE);
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
             loadNative();
         } else{
             loadxWalk();
