@@ -69,7 +69,7 @@ public class MainActivity extends Activity{
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             Uri uri = intent.getData();
             String streamId = uri.getLastPathSegment();
-            mUrl += "replay/" + streamId;
+            mUrl += "stream/" + streamId;
         }
 
         loadWeb();
