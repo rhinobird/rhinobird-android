@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import tv.rhinobird.app.MainActivity;
@@ -51,7 +52,7 @@ public class GcmBroadcastReceiver extends BroadcastReceiver {
                         .setSmallIcon(getNotificationIcon())
                         .setContentTitle(username + " is going live!")
                         .setVibrate(pattern)
-                        .setColor(mContext.getResources().getColor(R.color.red))
+                        .setColor(ContextCompat.getColor(mContext, R.color.red))
                         .setContentText(caption);
 
         NotificationManager mNotificationManager =
