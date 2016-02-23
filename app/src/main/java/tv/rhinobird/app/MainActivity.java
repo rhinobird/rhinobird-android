@@ -28,7 +28,11 @@ import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkView;
 
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.RuntimePermissions;
 
+
+@RuntimePermissions
 public class MainActivity extends Activity{
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -43,7 +47,7 @@ public class MainActivity extends Activity{
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
-        initWeb();
+        MainActivityPermissionsDispatcher.initWebWithCheck(this);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
@@ -73,6 +77,13 @@ public class MainActivity extends Activity{
         }
 
         loadWeb();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // NOTE: delegate the permission handling to generated method
+        MainActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
     }
 
     @Override
@@ -119,6 +130,7 @@ public class MainActivity extends Activity{
         }
     }
 
+    @NeedsPermission({android.Manifest.permission.CAMERA, android.Manifest.permission.RECORD_AUDIO})
     public void initWeb(){
         webLoader = (WebView) findViewById(R.id.fragment_loader_webview);
         webLoader.loadUrl("file:///android_asset/index.html");
